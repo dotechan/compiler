@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 static Token *token;
+static char *current_input;
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
@@ -20,7 +21,7 @@ static void expect(char *op) {
     if (token->kind != TK_RESERVED ||
         strlen(op) != token->len ||
         memcmp(token->str, op, token->len)) {
-        error_tok(token->str, "'%c'ではありません", op);
+        error_tok(token->str, current_input, "'%c'ではありません", op);
     }
     token = token->next;
 }
@@ -29,7 +30,7 @@ static void expect(char *op) {
 // それ以外の場合にはエラーを報告する。
 static int expect_number() {
     if (token->kind != TK_NUM) {
-        error_tok(token->str, "数ではありません");
+        error_tok(token->str, current_input, "数ではありません");
     }
     int val = token->val;
     token = token->next;
@@ -55,7 +56,7 @@ static Node *new_num(int val) {
     return node;
 }
 
-Node *expr(Token *tok);
+static Node *expr();
 static Node *equality();
 static Node *relational();
 static Node *add();
@@ -63,9 +64,14 @@ static Node *mul();
 static Node *unary();
 static Node *primary();
 
+Node *parse(Token *target_token, char *input) {
+    token = target_token;
+    current_input = input;
+    return expr();
+}
+
 // expr = equality
-Node *expr(Token *tok) {
-    token = tok;
+static Node *expr() {
     return equality();
 }
 

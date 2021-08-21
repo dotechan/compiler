@@ -6,6 +6,30 @@
 #include <string.h>
 
 //
+// tokenize.c
+//
+
+// トークンの種類
+typedef enum {
+    TK_RESERVED,    // 記号
+    TK_NUM,         // 整数トークン
+    TK_EOF,         // 入力の終わりを表すトークン
+} TokenKind;
+
+// トークン型
+typedef struct Token Token;
+struct Token {
+    TokenKind kind; // トークンの型
+    Token *next;    // 次の入力トークン
+    int val;        // kindがTK_NUMの場合、その数値
+    char *str;      // トークン文字列
+    int len;        // トークンの長さ
+};
+
+Token *tokenize(char *p);
+void error_tok(char *loc, char *current_input, char *fmt, ...);
+
+//
 // parse.c
 //
 
@@ -22,8 +46,8 @@ typedef enum {
     ND_NUM, // 整数
 } NodeKind;
 
-typedef struct Node Node;
 // 抽象構文木のノードの型
+typedef struct Node Node;
 struct Node {
     NodeKind kind;  // ノードの型
     Node *lhs;      // 左辺
@@ -31,37 +55,10 @@ struct Node {
     int val;        // kindがND_NUMの場合のみ使う
 };
 
-// トークンの種類
-typedef enum {
-    TK_RESERVED,    // 記号
-    TK_NUM,         // 整数トークン
-    TK_EOF,         // 入力の終わりを表すトークン
-} TokenKind;
-
-typedef struct Token Token;
-// トークン型
-struct Token {
-    TokenKind kind; // トークンの型
-    Token *next;    // 次の入力トークン
-    int val;        // kindがTK_NUMの場合、その数値
-    char *str;      // トークン文字列
-    int len;        // トークンの長さ
-};
-
-Node *expr(Token *tok);
-
-//
-// main.c
-//
-
-void error_tok(char *loc, char *fmt, ...);
+Node *parse(Token *target_token, char *input);
 
 //
 // codegen.c
 //
 
 void gen(Node *node);
-
-// TODO:下記のコミットを参考にグルーバル変数として定義していた変数を適切なファイルに分割する
-// https://github.com/rui314/chibicc/commit/725badfb494544b7c7f1d4c4690b9bc033c6d051
-// 現在着目しているトークン
