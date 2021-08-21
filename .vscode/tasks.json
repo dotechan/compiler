@@ -9,11 +9,11 @@
       "command": "gcc",
       "args": [
         "-g",
-        "${file}",
+        "main.c tokenize.c parse.c codegen.c",
         "-O0",
         "-Wall",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}"
+        "9cc"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

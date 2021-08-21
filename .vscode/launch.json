@@ -8,7 +8,7 @@
       "name": "Launch Program(lldb)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "program": "${workspaceFolder}/9cc",
       "args": ["${input:formula}"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

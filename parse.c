@@ -153,7 +153,7 @@ static Node *unary() {
 static Node *primary() {
     // 次のトークンが"("なら、"(" expr ")"のはず
     if (consume("(")) {
-        Node *node = expr(token);
+        Node *node = expr();
         expect(")");
         return node;
     }
