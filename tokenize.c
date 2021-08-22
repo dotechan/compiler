@@ -52,8 +52,14 @@ Token *tokenize(char *p) {
         }
 
         // Single-letter punctuator
-        if (strchr("+-*/()<>", *p)) {
+        if (strchr("+-*/()<>=", *p)) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
+            continue;
+        }
+
+        // アルファベットの小文字
+        if ('a' <= *p && *p <= 'z') {
+            cur = new_token(TK_IDENT, cur, p++, 1);
             continue;
         }
 

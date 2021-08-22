@@ -3,6 +3,10 @@
 static Token *token;
 static char *current_input;
 
+bool at_eof() {
+    return token->kind == TK_EOF;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 static bool consume(char *op) {
@@ -56,7 +60,16 @@ static Node *new_num(int val) {
     return node;
 }
 
+static Node *new_var() {
+    Node *node = new_node(ND_LVAR);
+    node->offset = (token->str[0] - 'a' + 1) * 8;
+    return node;
+}
+
+static Node *program();
+static Node *stmt();
 static Node *expr();
+static Node *assign();
 static Node *equality();
 static Node *relational();
 static Node *add();
@@ -70,9 +83,37 @@ Node *parse(Token *target_token, char *input) {
     return expr();
 }
 
-// expr = equality
+Node *code[100];
+
+// program = stmt*
+static Node *program() {
+    int i = 0;
+    while (!at_eof()) {
+        code[i++] = stmt();
+    }
+    code[i] = NULL;
+}
+
+// stmt = expr ";"
+static Node *stmt() {
+    Node *node = expr();
+    expect(";");
+    return node;
+}
+
+// expr = assign
 static Node *expr() {
-    return equality();
+    return assign();
+}
+
+// assign = equality ("=" assign)?
+static Node *assign() {
+    Node *node = equality();
+
+    if (consume("=")) {
+        node = new_binary(ND_ASSIGN, node, assign());
+    }
+    return node;
 }
 
 // equality = relational ("==" relational | "!=" relational)*
@@ -139,7 +180,7 @@ static Node *mul() {
     }
 }
 
-// unary = ("+" | "-")? unary | primary
+// unary = ("+" | "-")? | primary
 static Node *unary() {
     if (consume("+")) {
         return unary();
@@ -149,12 +190,19 @@ static Node *unary() {
     return primary();
 }
 
-// primary = "(" expr ")" | num
+// TODO: identのパース処理を追加
+// primary = num | ident | "(" expr ")"
 static Node *primary() {
     // 次のトークンが"("なら、"(" expr ")"のはず
     if (consume("(")) {
         Node *node = expr();
         expect(")");
+        return node;
+    }
+
+    if (token->kind == TK_IDENT) {
+        Node *node = new_var();
+        token = token->next;
         return node;
     }
 
